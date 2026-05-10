@@ -461,6 +461,39 @@ class PreferencesDialog:
             "units_iec",
             vbox=vbox)
 
+        self.__create_min_temp_age_widget(vbox)
+
+    def __create_min_temp_age_widget(self, vbox):
+        """Create a spin button for the minimum age of temporary files."""
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        # TRANSLATORS: Label for the spin button in the preferences dialog
+        # that sets the minimum age (in hours) for temporary files to be
+        # eligible for deletion. Files newer than this threshold are kept.
+        label = Gtk.Label(label=_("Minimum age of temporary files (hours):"))
+        label.set_xalign(0)
+        hbox.pack_start(label, False, False, 0)
+
+        adjustment = Gtk.Adjustment(
+            value=options.get('min_temp_file_age'),
+            lower=0,
+            upper=8760,
+            step_increment=1,
+            page_increment=24)
+        spin = Gtk.SpinButton(adjustment=adjustment, climb_rate=1, digits=0)
+        spin.set_tooltip_text(
+            # TRANSLATORS: Tooltip for the minimum age spin button in
+            # the preferences dialog. Temporary files younger than this
+            # number of hours will not be deleted.
+            _("Temporary files younger than this many hours will not be deleted."))
+        spin.connect('value-changed', self.__on_min_temp_age_changed)
+        hbox.pack_start(spin, False, False, 0)
+
+        vbox.pack_start(hbox, False, True, 0)
+
+    def __on_min_temp_age_changed(self, spin):
+        """Callback for the minimum temp file age spin button."""
+        options.set('min_temp_file_age', int(spin.get_value()))
+
     def __create_page_box(self):
         """Create a standard page container box with consistent spacing and padding."""
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)

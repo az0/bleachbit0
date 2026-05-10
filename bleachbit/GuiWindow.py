@@ -43,6 +43,11 @@ CLEAN_MSG = _('Clean')
 # Preserve the ellipsis as literal Unicode (…) or as Unicode escape (\u2026).
 MANAGE_COOKIES_TO_KEEP = _("Manage cookies to keep\u2026")
 
+# TRANSLATORS: Context menu item in the tree view that opens the preferences
+# dialog to set the minimum age for temporary files.
+# Preserve the ellipsis as literal Unicode (…) or as Unicode escape (\u2026).
+SET_MIN_TEMP_AGE = _("Set minimum age for temporary files\u2026")
+
 # Ensure GTK is available for this GUI module
 require_gtk()
 
@@ -827,6 +832,10 @@ class GUI(Gtk.ApplicationWindow):
         """Callback to launch the preferences dialog with Custom page"""
         self.show_preferences_dialog('custom')
 
+    def cb_set_min_temp_age(self, widget):
+        """Callback to launch the preferences dialog with General page"""
+        self.show_preferences_dialog('general')
+
     def _option_has_cookie_command(self, cleaner_id, option_id):
         """Return True if the given option runs a cookie command."""
         cleaner = backends.get(cleaner_id)
@@ -883,6 +892,13 @@ class GUI(Gtk.ApplicationWindow):
             custom_paths_item = Gtk.MenuItem(label=custom_paths_label)
             custom_paths_item.connect('activate', self.cb_manage_custom_paths)
             menu.append(custom_paths_item)
+
+        # Check if this is the system.tmp option
+        if cleaner_id == 'system' and option_id == 'tmp':
+            menu.append(Gtk.SeparatorMenuItem())
+            min_age_item = Gtk.MenuItem(label=SET_MIN_TEMP_AGE)
+            min_age_item.connect('activate', self.cb_set_min_temp_age)
+            menu.append(min_age_item)
 
         # show the context menu
         menu.attach_to_widget(treeview)

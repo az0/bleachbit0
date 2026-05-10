@@ -14,6 +14,7 @@ import os.path
 import re
 import sys
 import tempfile
+import time
 
 from bleachbit.Constant import EMPTY_SPACE_WARNING
 from bleachbit.Language import get_text as _
@@ -485,6 +486,9 @@ class System(Cleaner):
 
         # temporary files
         if 'posix' == os.name and 'tmp' == option_id:
+            min_age_hours = options.get('min_temp_file_age') or 0
+            min_age_seconds = min_age_hours * 3600
+            now = time.time()
             dirnames = ['/tmp', '/var/tmp']
             for dirname in dirnames:
                 for path in children_in_directory(dirname, True):
@@ -493,11 +497,21 @@ class System(Cleaner):
                         not os.path.islink(path) and \
                         FileUtilities.ego_owner(path) and \
                         not self.whitelisted(path)
+                    if ok and min_age_seconds > 0:
+                        try:
+                            file_age = now - os.path.getmtime(path)
+                            if file_age < min_age_seconds:
+                                ok = False
+                        except OSError:
+                            pass
                     if ok:
                         yield Command.Delete(path)
 
         # temporary files
         if 'nt' == os.name and 'tmp' == option_id:
+            min_age_hours = options.get('min_temp_file_age') or 0
+            min_age_seconds = min_age_hours * 3600
+            now = time.time()
             dirnames = [os.path.expandvars(
                 r'%temp%'), os.path.expandvars("%windir%\\temp\\")]
             # whitelist the folder %TEMP%\Low but not its contents
@@ -506,6 +520,13 @@ class System(Cleaner):
                 low = os.path.join(dirname, 'low').lower()
                 for filename in children_in_directory(dirname, True):
                     if not low == filename.lower():
+                        if min_age_seconds > 0:
+                            try:
+                                file_age = now - os.path.getmtime(filename)
+                                if file_age < min_age_seconds:
+                                    continue
+                            except OSError:
+                                pass
                         yield Command.Delete(filename)
 
         # trash
