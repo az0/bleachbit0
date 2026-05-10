@@ -60,6 +60,7 @@ OPTION_DEFAULTS = {
     'shred': {'value': False},
     'units_iec': {'value': False},
     'window_maximized': {'value': False},
+    'min_temp_file_age': {'value': 24},
     'window_fullscreen': {'value': False},
     'font_check_completed': {'value': False, 'platforms': ('nt',)},
     'update_winapp2': {'value': False, 'platforms': ('nt',)},
@@ -82,9 +83,9 @@ def _get_default_value(option):
 
 boolean_keys = [
     key for key, meta in OPTION_DEFAULTS.items()
-    if _platform_allows(meta)
+    if _platform_allows(meta) and isinstance(meta['value'], bool)
 ]
-int_keys = ['window_x', 'window_y', 'window_width', 'window_height', ]
+int_keys = ['min_temp_file_age', 'window_x', 'window_y', 'window_width', 'window_height', ]
 
 
 def _option_index(option_name):
