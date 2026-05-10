@@ -421,6 +421,20 @@ class PreferencesDialog:
 
         self._create_checkbox(
             # TRANSLATORS: Checkbox label in the preferences dialog.
+            # When enabled, BleachBit will terminate (kill) any running
+            # process that would otherwise prevent its cleaner from running.
+            # When disabled (default), those cleaners are skipped.
+            _("Close running processes to allow cleaning"),
+            'kill_running_processes',
+            vbox=vbox,
+            # TRANSLATORS: Tooltip for the kill running processes checkbox
+            # in the preferences dialog.
+            tooltip=_("When enabled, BleachBit will close running applications "
+                      "(such as web browsers) before cleaning them. "
+                      "When disabled, cleaners for running applications are skipped."))
+
+        self._create_checkbox(
+            # TRANSLATORS: Checkbox label in the preferences dialog.
             _("Exit after cleaning"),
             'exit_done',
             vbox=vbox)

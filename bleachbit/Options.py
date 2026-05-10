@@ -53,6 +53,7 @@ OPTION_DEFAULTS = {
     'delete_confirmation': {'value': True},
     'expert_mode': {'value': False},
     'exit_done': {'value': False},
+    'kill_running_processes': {'value': False},
     'first_start': {'value': False},
     'kde_shred_menu_option': {'value': False},
     'load_cleaners': {'value': True},

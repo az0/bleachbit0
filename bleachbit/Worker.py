@@ -33,6 +33,7 @@ from bleachbit import DeepScan, FileUtilities
 from bleachbit.Cleaner import backends
 from bleachbit.Constant import EMPTY_SPACE_WARNING
 from bleachbit.Language import get_text as _, nget_text as ngettext
+from bleachbit.Options import options
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +157,20 @@ class Worker:
                 # (e.g., win.shell.change.notify)
                 self.ui.append_text(line)
 
+    def _terminate_processes(self, operation):
+        """Terminate running processes for the given cleaner operation"""
+        from bleachbit.Process import terminate_process
+        cleaner = backends[operation]
+        for (test, pathname, same_user) in cleaner.running:
+            if 'exe' == test:
+                terminated = terminate_process(pathname, same_user)
+                if terminated:
+                    # TRANSLATORS: %s expands to a process name such as 'firefox'.
+                    msg = _("Closed running process '%s'") % pathname
+                    self.ui.append_text(msg + "\n")
+                    logger.debug("terminated PIDs %s for '%s'",
+                                 terminated, pathname)
+
     def clean_operation(self, operation):
         """Perform a single cleaning operation"""
         operation_options = self.operations[operation]
@@ -167,12 +182,15 @@ class Worker:
             return
 
         if self.really_delete and backends[operation].is_process_running():
-            # TRANSLATORS: %s expands to a name such as 'Firefox' or 'System'.
-            err = _("%s cannot be cleaned because it is currently running.  Close it, and try again.") \
-                % backends[operation].get_name()
-            self.ui.append_text(err + "\n", 'error')
-            self.total_errors += 1
-            return
+            if options.get('kill_running_processes'):
+                self._terminate_processes(operation)
+            else:
+                # TRANSLATORS: %s expands to a name such as 'Firefox' or 'System'.
+                err = _("%s cannot be cleaned because it is currently running.  Close it, and try again.") \
+                    % backends[operation].get_name()
+                self.ui.append_text(err + "\n", 'error')
+                self.total_errors += 1
+                return
         import time
         self.yield_time = time.time()
 
